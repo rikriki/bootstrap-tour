@@ -78,7 +78,32 @@
       this.backdrops = [];
       this;
     }
+    Tour.prototype._checkBackground = function(self) {
+      var step = self.getStep(self.getCurrentStep())
+      $element = $(step.element);
+      $backdropElement = $(step.backdropElement);
+      var elementData = {
+        width: $backdropElement.innerWidth(),
+        height: $backdropElement.innerHeight(),
+        offset: $backdropElement.offset()
+      };
+      if (step.backdropPadding) {
+        elementData = self._applyBackdropPadding(step.backdropPadding, elementData);
+      }
+      if(self.backdrop.$background){
+       
+      }
+      if((self._oldData && self._oldData != elementData.height) && self.backdrop.$background) {
+        self.backdrop.$background.width(elementData.width).height(elementData.height).offset(elementData.offset);  
+        
+      //  _.debounce(function(){
+          self._showPopover(step,self.getCurrentStep())
+        // })
 
+      }
+      self._oldData =  elementData.height
+      
+     };
     Tour.prototype.addSteps = function(steps) {
       var step, _i, _len;
       for (_i = 0, _len = steps.length; _i < _len; _i++) {
@@ -152,6 +177,10 @@
     };
 
     Tour.prototype.start = function(force) {
+      var self =this
+      this.checkSize = setInterval(function(){
+        self._checkBackground(self)
+      },100)
       var promise;
       if (force == null) {
         force = false;
@@ -185,6 +214,7 @@
     };
 
     Tour.prototype.end = function() {
+      clearInterval(this.checkSize)
       var endHelper, promise;
       endHelper = (function(_this) {
         return function(e) {
