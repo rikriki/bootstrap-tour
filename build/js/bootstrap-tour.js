@@ -90,9 +90,7 @@
       if (step.backdropPadding) {
         elementData = self._applyBackdropPadding(step.backdropPadding, elementData);
       }
-      if(self.backdrop.$background){
-       
-      }
+     
       if((self._oldData && self._oldData != elementData.height) && self.backdrop.$background) {
         self.backdrop.$background.width(elementData.width).height(elementData.height).offset(elementData.offset);  
         
