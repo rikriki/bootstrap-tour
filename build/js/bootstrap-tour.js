@@ -117,6 +117,13 @@
       this._options.steps.push(step);
       return this;
     };
+    Tour.prototype.addLabelControl = function(){
+      
+      _.each(this._options.steps,function(step,i){
+        $(step.element.split(' ')[0] + ' > label').addClass('tourable').data('step',i)
+      })
+      return this;
+    }
 
     Tour.prototype.getStep = function(i) {
       if (this._options.steps[i] != null) {
