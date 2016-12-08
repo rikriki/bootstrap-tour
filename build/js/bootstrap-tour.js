@@ -205,6 +205,9 @@
         promise = this._makePromise(this._options.onStart != null ? this._options.onStart(this) : void 0);
         this._callOnPromiseDone(promise, this.showStep, 0);
       }
+      if(this._options.view=="table"){
+        this.addDisabledControl()
+      }
       return this;
     };
 
@@ -230,6 +233,9 @@
     };
 
     Tour.prototype.end = function() {
+      if(this._options.view=="table"){
+        this.deleteDisabledControl();
+      }
       clearInterval(this.checkSize)
       var endHelper, promise;
       endHelper = (function(_this) {
@@ -727,29 +733,24 @@
       return $tip.find('.arrow').css(position, delta ? 50 * (1 - delta / dimension) + '%' : '');
     };
     Tour.prototype.addLabelControl=function(options){
-        if(options && options.view == 'table'){
-          
-           _.each(this._options.steps,function(step,i){
-                $(step.element).addClass('tour-disable')
-             })
-        }else{
-          _.each(this._options.steps,function(step,i){
+      
+        _.each(this._options.steps,function(step,i){
                 $(step.element.split(' ')[0] + ' > label').addClass('tourable').data('step',i)
-            })
-        } 
+        })
         return this;
       };
-    Tour.prototype.deleteDisabledControl=function(options){
-        if(options && options.view == 'table'){
-          
-           _.each(this._options.steps,function(step,i){
-                $(step.element).removeClass('tour-disable')
-             })
-        }
-        
-         
-            return this;
-      };
+    Tour.prototype.addDisabledControl = function() {
+      _.each(this._options.steps, function(step, i) {
+        $(step.element).addClass('tour-disable')
+      })
+      return this;
+    };
+    Tour.prototype.deleteDisabledControl = function() {
+      _.each(this._options.steps, function(step, i) {
+        $(step.element).removeClass('tour-disable')
+      })
+      return this;
+    };
 
     Tour.prototype._scrollIntoView = function(step, callback) {
       var $element, $window, counter, height, offsetTop, scrollTop, windowHeight;
