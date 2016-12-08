@@ -76,9 +76,11 @@
       this._inited = false;
       this._current = null;
       this.backdrops = [];
+      this._stopCheckBg = false;
       this;
     }
     Tour.prototype._checkBackground = function(self) {
+      // debugger;
       var step = self.getStep(self.getCurrentStep())
       $element = $(step.element);
       $backdropElement = $(step.backdropElement);
@@ -90,16 +92,22 @@
       if (step.backdropPadding) {
         elementData = self._applyBackdropPadding(step.backdropPadding, elementData);
       }
-     
-      if((self._oldData && self._oldData != elementData.height) && self.backdrop.$background) {
-        self.backdrop.$background.width(elementData.width).height(elementData.height).offset(elementData.offset);  
-        
-      //  _.debounce(function(){
-          self._showPopover(step,self.getCurrentStep())
-        // })
-
+      if(!this._stopCheckBg){
+        this._showBackground(step, elementData)  
       }
-      self._oldData =  elementData.height
+      
+      //_.debounce(this._showBackground(step, elementData),1000);
+      
+     
+      // if((self._oldData && self._oldData != elementData.height) && self.backdrop.$background) {
+      //   self.backdrop.$background.width(elementData.width).height(elementData.height).offset(elementData.offset);  
+        
+      // //  _.debounce(function(){
+      //     self._showPopover(step,self.getCurrentStep())
+      //   // })
+
+      // }
+      // self._oldData =  elementData.height
       
      };
     Tour.prototype.addSteps = function(steps) {
@@ -185,7 +193,7 @@
       var self =this
       this.checkSize = setInterval(function(){
         self._checkBackground(self)
-      },100)
+      },1)
       var promise;
       if (force == null) {
         force = false;
@@ -202,18 +210,21 @@
 
     Tour.prototype.next = function() {
       var promise;
+      this._stopCheckBg=true;
       promise = this.hideStep(this._current, this._current + 1);
       return this._callOnPromiseDone(promise, this._showNextStep);
     };
 
     Tour.prototype.prev = function() {
       var promise;
+      this._stopCheckBg=true;
       promise = this.hideStep(this._current, this._current - 1);
       return this._callOnPromiseDone(promise, this._showPrevStep);
     };
 
     Tour.prototype.goTo = function(i) {
       var promise;
+      this._stopCheckBg=true;
       promise = this.hideStep(this._current, i);
       return this._callOnPromiseDone(promise, this.showStep, i);
     };
@@ -485,6 +496,7 @@
     };
 
     Tour.prototype._showNextStep = function() {
+      this._stopCheckBg = true;
       var promise, showNextStepHelper, step;
       step = this.getStep(this._current);
       showNextStepHelper = (function(_this) {
@@ -714,6 +726,30 @@
     Tour.prototype._replaceArrow = function($tip, delta, dimension, position) {
       return $tip.find('.arrow').css(position, delta ? 50 * (1 - delta / dimension) + '%' : '');
     };
+    Tour.prototype.addLabelControl=function(options){
+        if(options && options.view == 'table'){
+          
+           _.each(this._options.steps,function(step,i){
+                $(step.element).addClass('tour-disable')
+             })
+        }else{
+          _.each(this._options.steps,function(step,i){
+                $(step.element.split(' ')[0] + ' > label').addClass('tourable').data('step',i)
+            })
+        } 
+        return this;
+      };
+    Tour.prototype.deleteDisabledControl=function(options){
+        if(options && options.view == 'table'){
+          
+           _.each(this._options.steps,function(step,i){
+                $(step.element).removeClass('tour-disable')
+             })
+        }
+        
+         
+            return this;
+      };
 
     Tour.prototype._scrollIntoView = function(step, callback) {
       var $element, $window, counter, height, offsetTop, scrollTop, windowHeight;
@@ -731,11 +767,14 @@
           scrollTop = Math.max(0, offsetTop - (windowHeight / 2));
           break;
         case 'left':
+        case 'leftTopAlign':
         case 'right':
           scrollTop = Math.max(0, (offsetTop + height / 2) - (windowHeight / 2));
           break;
         case 'bottom':
           scrollTop = Math.max(0, (offsetTop + height) - (windowHeight / 2));
+
+
       }
       this._debug("Scroll into view. ScrollTop: " + scrollTop + ". Element offset: " + offsetTop + ". Window height: " + windowHeight + ".");
       counter = 0;
@@ -840,6 +879,7 @@
     };
 
     Tour.prototype._showBackground = function(step, data) {
+      this._stopCheckBg = false
       var $backdrop, height, pos, width, _base, _i, _len, _ref, _results;
       height = $(document).height();
       width = $(document).width();
@@ -908,6 +948,8 @@
       }
       return this._showBackground(step, elementData);
     };
+
+
 
     Tour.prototype._hideOverlayElement = function(step) {
       var $backdrop, pos, _ref;
